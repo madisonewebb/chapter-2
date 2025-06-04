@@ -1,0 +1,29 @@
+name: Reusable Workflow
+
+on:
+  workflow_call:
+    inputs:
+      custom-value:
+        required: false
+        type: string
+        default: hello
+
+jobs:
+  generate-output:
+    runs-on: ubuntu-latest
+    outputs:
+      myvalue: ${{ steps.set-output.outputs.myvalue }}
+    steps:
+      - name: Set an output value
+        id: set-output
+        run: echo "myvalue=${{ inputs.custom-value }}" >> $GITHUB_OUTPUT
+
+  matrix-job:
+    needs: generate-output
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        number: [1,2,3,4,5,6,7,8,9,10]
+    steps:
+      - name: Use output from previous job
+        run: echo "${{ needs.generate-output.outputs.myvalue }}-${{ matrix.number }}"
