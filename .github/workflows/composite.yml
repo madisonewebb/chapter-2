@@ -45,7 +45,7 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: output-file
+          name: output-generate-output
 
       - name: Set env var from file
         run: echo "MY_OUTPUT=$(cat output.txt)" > $GITHUB_ENV
