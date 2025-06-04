@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  generate-output:
+    runs-on: self-hosted
+    steps:
+      - name: Create output file
+        run: echo "hello" > output.txt
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: output-file
+          path: output.txt
+
+  simple:
+    runs-on: self-hosted
+    steps:
+      - name: Run a one-line script with secret
+        run: echo ${{ secrets.MY_SECRET_PASSWORD }}
+
+  matrix-job:
+    needs: generate-output
+    runs-on: self-hosted
+    strategy:
+      matrix:
+        number: [1,2,3,4,5,6,7,8,9,10]
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: output-file
+
+      - name: Set env var from file
+        run: echo "MY_OUTPUT=$(cat output.txt)" >> $GITHUB_ENV
+
+      - name: Use value from artifact
+        run: echo "${MY_OUTPUT}-${{ matrix.number }}"
