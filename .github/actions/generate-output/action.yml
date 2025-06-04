@@ -11,3 +11,20 @@ runs:
       id: set-output
       shell: bash
       run: echo "myvalue=hello" >> "$GITHUB_OUTPUT"
+
+name: Generate Output
+description: A composite action that sets a job-level output from input
+inputs:
+  custom-input:
+    description: "An optional custom string"
+    required: false
+    default: "default string from composite action"
+outputs:
+  myvalue:
+    description: "The output value"
+runs:
+  using: "composite"
+  steps:
+    - name: Set output
+      shell: bash
+      run: echo "myvalue=${{ inputs.custom-input }}" >> "$GITHUB_OUTPUT"
