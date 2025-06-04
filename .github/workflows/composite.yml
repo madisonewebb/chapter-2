@@ -1,0 +1,45 @@
+# This is a basic workflow to help you get started with Actions on a self-hosted runner
+name: CI (Self-Hosted)
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push events but only for the "main" branch
+  push:
+    branches: [ "main" ]
+  # Allows the workflow to be manually triggered
+  workflow_dispatch:
+
+jobs:
+  generate-output:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run composite action
+        id: generate
+        uses: ./.github/actions/generate-output
+
+  simple:
+    runs-on: self-hosted
+    steps:
+      - name: Run one-line script with secret
+        run: echo ${{ secrets.MY_SECRET_PASSWORD }}
+
+  matrix-job:
+    needs: generate-output
+    runs-on: self-hosted
+    strategy:
+      matrix:
+        number: [1,2,3,4,5,6,7,8,9,10]
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: output-file
+
+      - name: Set env var from file
+        run: echo "MY_OUTPUT=$(cat output.txt)" > $GITHUB_ENV
+
+      - name: Use value from artifact
+        run: echo "${MY_OUTPUT}-${{ matrix.number }}"

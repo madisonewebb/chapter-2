@@ -1,0 +1,13 @@
+name: Generate Output
+description: A composite action that sets a job-level output
+inputs: {}
+outputs:
+  myvalue:
+    description: "The output value"
+runs:
+  using: "composite"
+  steps:
+    - name: Set output
+      id: set-output
+      shell: bash
+      run: echo "myvalue=hello" >> "$GITHUB_OUTPUT"
