@@ -3,7 +3,7 @@
 [![CI (Composite Action)](https://github.com/madisonewebb/dob-chapter-2/actions/workflows/composite.yml/badge.svg)](https://github.com/madisonewebb/dob-chapter-2/actions/workflows/composite.yml)
 [![Reusable Workflow Caller](https://github.com/madisonewebb/dob-chapter-2/actions/workflows/caller.yml/badge.svg)](https://github.com/madisonewebb/dob-chapter-2/actions/workflows/caller.yml)
 
-# DOB Chapter 2
+# DOB Chapter 2 - GitHub
 
 ## GitHub Actions Workflows in This Repo
 This repository demonstrates several ways to automate tasks using GitHub Actions, including basic workflows, self-hosted runners, composite actions, and reusable workflows.
