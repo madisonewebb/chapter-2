@@ -20,6 +20,15 @@ jobs:
         id: generate
         uses: ./.github/actions/generate-output
 
+      - name: Create output file
+        run: echo "${{ steps.generate.outputs.myvalue }}" > output.txt
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: output-generate-output
+          path: output.txt
+
   simple:
     runs-on: self-hosted
     steps:

@@ -19,9 +19,9 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: output-${{ github.job }}
-          path: output-${{ github.job }}.txt
-
+          name: output-generate-output
+          path: output.txt
+          
   simple:
     runs-on: self-hosted
     steps:
