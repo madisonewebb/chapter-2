@@ -1,4 +1,4 @@
-name: Reusable Workflow
+name: CI (Reusable Workflow)
 
 on:
   workflow_call:
@@ -6,7 +6,7 @@ on:
       custom-value:
         required: false
         type: string
-        default: hello
+        default: "default string from reusable workflow"
 
 jobs:
   generate-output:

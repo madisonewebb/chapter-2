@@ -1,3 +1,8 @@
+[![CI (Basic)](https://github.com/madisonewebb/dob-chapter-2/actions/workflows/getting-started.yml/badge.svg)](https://github.com/madisonewebb/dob-chapter-2/actions/workflows/getting-started.yml)
+[![CI (Self-Hosted)](https://github.com/madisonewebb/dob-chapter-2/actions/workflows/self-hosted.yml/badge.svg)](https://github.com/madisonewebb/dob-chapter-2/actions/workflows/self-hosted.yml)
+[![CI (Composite Action)](https://github.com/madisonewebb/dob-chapter-2/actions/workflows/composite.yml/badge.svg)](https://github.com/madisonewebb/dob-chapter-2/actions/workflows/composite.yml)
+[![Reusable Workflow Caller](https://github.com/madisonewebb/dob-chapter-2/actions/workflows/caller.yml/badge.svg)](https://github.com/madisonewebb/dob-chapter-2/actions/workflows/caller.yml)
+
 # DOB Chapter 2
 
 ## GitHub Actions Workflows in This Repo
