@@ -1,5 +1,6 @@
 require('dotenv').config();
 const { graphql } = require('@octokit/graphql');
+const { Octokit } = require('@octokit/rest');
 
 // Initialize Octokit with authentication
 const graphqlWithAuth = graphql.defaults({
@@ -8,6 +9,14 @@ const graphqlWithAuth = graphql.defaults({
       'X-GitHub-Api-Version': '2022-11-28'
     }
   });
+
+// Initialize REST API client
+const octokit = new Octokit({
+    auth: process.env.GITHUB_TOKEN,
+    userAgent: 'github-graphql-example',
+    timeZone: 'America/Los_Angeles',
+    baseUrl: 'https://api.github.com'
+});
 
 console.log('Starting GitHub GraphQL operations...');
 
@@ -47,7 +56,7 @@ async function createRepository() {
     });
 }
 
-// 2. Create a pull request and an issue with just a simple title and body inside that repository
+// 2. Create an issue with just a simple title and body inside that repository
 async function createIssue(repositoryId) {
     const query = `
         mutation {
@@ -69,6 +78,109 @@ async function createIssue(repositoryId) {
     `;
     
     return await graphqlWithAuth(query);
+}
+
+// 3. Get and display the repository you created, as well as the the issue and pull request you made inside of it.
+// Create a pull request with a simple title and body inside the repository
+async function createPullRequest(repositoryId) {
+    try {
+        // For a newly created repository, we'll use a combination of GraphQL and REST API
+        
+        // 1. First, get the repository details using GraphQL
+        const repoQuery = `
+            query {
+                node(id: "${repositoryId}") {
+                    ... on Repository {
+                        name
+                        owner {
+                            login
+                        }
+                        defaultBranchRef {
+                            name
+                        }
+                    }
+                }
+            }
+        `;
+        
+        const repoInfo = await graphqlWithAuth(repoQuery);
+        const repoName = repoInfo.node.name;
+        const ownerLogin = repoInfo.node.owner.login;
+        const defaultBranchName = repoInfo.node.defaultBranchRef?.name || "main";
+        
+        console.log(`Repository: ${ownerLogin}/${repoName}, Default branch: ${defaultBranchName}`);
+        
+        // 2. Create README.md file in the default branch using REST API
+        console.log("Creating README.md file...");
+        await octokit.repos.createOrUpdateFileContents({
+            owner: ownerLogin,
+            repo: repoName,
+            path: "README.md",
+            message: "Initial commit",
+            content: Buffer.from("# Repo from GraphQL\n\nCreated via GitHub GraphQL API").toString('base64'),
+            branch: defaultBranchName
+        });
+        
+        // 3. Create a feature branch from the default branch using REST API
+        console.log("Getting default branch reference...");
+        const { data: refData } = await octokit.git.getRef({
+            owner: ownerLogin,
+            repo: repoName,
+            ref: `heads/${defaultBranchName}`
+        });
+        
+        const defaultBranchSha = refData.object.sha;
+        console.log(`Default branch SHA: ${defaultBranchSha}`);
+        
+        // Create the feature branch
+        console.log("Creating feature branch...");
+        await octokit.git.createRef({
+            owner: ownerLogin,
+            repo: repoName,
+            ref: "refs/heads/feature-branch",
+            sha: defaultBranchSha
+        });
+        
+        // 4. Create a new file in the feature branch
+        console.log("Adding feature.md file to feature branch...");
+        await octokit.repos.createOrUpdateFileContents({
+            owner: ownerLogin,
+            repo: repoName,
+            path: "feature.md",
+            message: "Add feature",
+            content: Buffer.from("# New Feature\n\nThis is a new feature added via GitHub API").toString('base64'),
+            branch: "feature-branch"
+        });
+        
+        // 5. Create a pull request using GraphQL
+        console.log("Creating pull request...");
+        const createPRQuery = `
+            mutation {
+                createPullRequest(
+                    input: {
+                        repositoryId: "${repositoryId}"
+                        baseRefName: "${defaultBranchName}"
+                        headRefName: "feature-branch"
+                        title: "Add new feature"
+                        body: "This pull request adds a new feature file created via GitHub API"
+                    }
+                ) {
+                    pullRequest {
+                        id
+                        title
+                        body
+                        url
+                    }
+                }
+            }
+        `;
+        
+        const prResponse = await graphqlWithAuth(createPRQuery);
+        return prResponse;
+    } catch (error) {
+        console.error("Error in createPullRequest:", error);
+        throw error;
+    }
 }
 
 // 3. Get and display the repository you created, as well as the the issue and pull request you made inside of it.
@@ -187,6 +299,15 @@ async function main() {
       const issueResponse = await createIssue(repositoryId);
       console.log("✅ Issue created successfully!");
       console.log("   URL:", issueResponse.createIssue.issue.url);
+      
+      console.log("\n3. Creating pull request...");
+      try {
+        const prResponse = await createPullRequest(repositoryId);
+        console.log("✅ Pull request created successfully!");
+        console.log("   URL:", prResponse.createPullRequest.pullRequest.url);
+      } catch (error) {
+        console.log("❌ Failed to create pull request:", error.message);
+      }
   
       console.log("Getting user and repo IDs...");
       const ownerRepoData = await getOwnerAndRepoId();
